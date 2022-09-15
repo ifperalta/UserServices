@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <title>OAuth Login Demo</title>
+    <meta name="description" content=""/>
+    <meta name="viewport" content="width=device-width"/>
+    <base href="/"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/js-cookie/3.0.1/js.cookie.js"></script>
+    <script type="text/javascript">
+        $.ajaxSetup({
+            beforeSend : function(xhr, settings) {
+                if (settings.type == 'POST' || settings.type == 'PUT'
+                    || settings.type == 'DELETE') {
+                    if (!(/^http:.*/.test(settings.url) || /^https:.*/
+                        .test(settings.url))) {
+                        // Only send the token to relative URLs i.e. locally.
+                        xhr.setRequestHeader("X-XSRF-TOKEN",
+                            Cookies.get('XSRF-TOKEN'));
+                    }
+                }
+            }
+        });
+
+        var logout = function() {
+            $.post("/logout", function() {
+                $("#user").html('');
+                $(".authenticated").hide();
+                $(".unauthenticated").show();
+
+                var register = $('.logout').attr('register');
+
+                if(register == "reg"){
+                    $(".register_account").show();
+                }
+
+            })
+            return true;
+        }
+
+        $( document ).ready(function() {
+            $.get("/user/authenticate", function(data) {
+                $("#user").html(data.name);
+                if(data.name !== ""){
+                    $(".unauthenticated").hide();
+                    $(".authenticated").show();
+
+                    localAuthenticate();
+                }
+            });
+
+            var localAuthenticate = function(){
+                $.get("/user/token", function(data) {
+                    var token = data.local_token;
+                    if(token !== "invalid"){
+                        $(".is_not_local_auth").hide();
+                        $(".is_local_auth").show();
+                    }else{
+                        $(".is_not_local_auth").show();
+                        $(".is_local_auth").hide();
+                    }
+                });
+            }
+
+            $(".is_not_local_auth").hide();
+            $(".is_local_auth").hide();
+            $(".authenticated").hide();
+            $(".unauthenticated").show();
+            $(".register_account").hide();
+        });
+    </script>
+
+</head>
+<body>
+<main role="main">
+    <section class="jumbotron text-center mt-4 p-4">
+        <div class="container">
+            <h1 class="jumbotron-heading">User Service OAuth 2.0 Authentication</h1>
+            <p>
+            <div class="container unauthenticated login-container">
+                <br />
+                <center>
+                    <img src="https://logos-world.net/wp-content/uploads/2020/11/GitHub-Logo.png" style="width: 150px;" />
+                </center>
+                <br />
+                <center>
+                    <a href="/oauth2/authorization/github" class="btn btn-primary" >Login Authentication Using GitHub Account</a>
+                </center>
+                <br />
+            </div>
+            <div class="container authenticated message-board">
+
+                <div class="is_local_auth">
+                    <div class="container">
+                        <div class="row border-top">
+                            <div class="col-12">
+                                <h3 class="text-left">Welcome to the demo</h3>
+                                <button onClick="logout()" class="btn btn-primary bt-right">Logout User</button>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">&nbsp;</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-3 border-right">
+                                <b>User Full Name</b>
+                                <br />
+                                <span id="user"></span><br /><br />
+
+                            </div>
+                            <div class="col-9">
+                                User messages board here...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="is_not_local_auth">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-12">
+                                Sorry you do not have account.<br /><br />
+                                <button onClick="logout()" class="btn btn-primary">Register User</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </p>
+        </div>
+    </section>
+</main>
+
+<style>
+    .login-container{
+        text-align: center;
+    }
+
+    .message-board{
+        margin: 0 auto;
+        display: table;
+        width: 750px;
+    }
+
+    .bt-right{
+        float: right !important;
+    }
+
+    .border-right{
+        border-right: 1px solid #BFC6CC;
+        text-align: left;
+    }
+
+    .border-top{
+        margin-top: 25px;
+        border-top: 1px solid #BFC6CC;
+        border-bottom: 1px solid #D9DDE1;
+        padding: 20px 0px;
+    }
+
+    .text-left{
+        float: left;
+        font-size: 18pt;
+        text-transform: uppercase;
+    }
+
+</style>
+
+</body>
+</html>
