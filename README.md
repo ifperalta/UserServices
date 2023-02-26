@@ -1,4 +1,4 @@
 # UserServices
 
-Java microservices that will connect to 0Auth for user authentication.
+Java microservices that will authenticate using using 0Auth.
  
